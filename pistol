@@ -1,0 +1,2 @@
+!nvcc -V
+!nvidia-smi
