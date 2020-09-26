@@ -1,2 +1,164 @@
+#Hardware checks
+!cat /proc/cpuinfo
+!cat /proc/meminfo
 !nvcc -V
 !nvidia-smi
+
+#Connect the storage
+from google.colab import drive
+drive.mount('/content/drive')
+
+#Cuda CNN package
+%cd /usr/local/
+!tar -xzvf "/content/drive/My Drive/DNN/cudnn-10.1-linux-x64-v7.6.5.32.tgz"
+!chmod a+r /usr/local/cuda/include/cudnn.h
+!cat /usr/local/cuda/include/cudnn.h | grep CUDNN_MAJOR -A 2
+
+#Check about CV2
+import cv2
+cv2.__version__
+
+#Darknet (YOLO)
+%cd /content
+!rm -fr darknet
+!git clone https://github.com/AlexeyAB/darknet/
+
+%cd darknet
+!apt update
+!apt-get install libopencv-dev
+
+#Makefile for CUDA
+!sed -i 's/OPENCV=0/OPENCV=1/g' Makefile
+!sed -i 's/GPU=0/GPU=1/g' Makefile
+!sed -i 's/CUDNN=0/CUDNN=1/g' Makefile
+
+%cd /content/darknet/
+!make
+
+#YOLOv4 conv net
+!cp "/content/drive/My Drive/DNN/yolov4.conv.137" /content/darknet/
+
+#dataset
+%cd /content/darknet/
+!curl -L https://public.roboflow.ai/ds/5c6ksTRNYr?key=93LronakUY > roboflow.zip; unzip roboflow.zip; rm roboflow.zip
+
+#dataset conversion
+%cd /content/darknet/export/
+!rename 's/\.[r][f].*//' *.jpg
+!rename 's/ //g' *.jpg
+!rename 's/[j][p][g]\.[r][f].*/txt/' *.txt  
+!rename 's/ //g' *.txt
+
+#dataset check
+%cd /content/darknet/export
+!ls -cr | head -n 3
+!ls -cr | tail -n 3
+
+#dataset split process
+%cd /content/darknet/
+!mkdir Datasets
+%cd /content/darknet/Datasets/
+!mkdir test train
+
+#pre-clean folders
+%cd /content/darknet/
+!rm Datasets/train/*
+!rm Datasets/test/*
+!ls Datasets/train | wc -l
+!ls Datasets/test | wc -l
+
+#dataset count
+%cd /content/darknet/export
+!ls | wc -l
+
+#count split
+!find /content/darknet/export -name "armas(*[3])*" | wc -l
+!find /content/darknet/export -name "armas(*[6])*" | wc -l
+!find /content/darknet/export -name "armas(*[9])*" | wc -l
+
+#split
+!find /content/darknet/export -name "armas(*[3])*" -exec cp {} "/content/darknet/Datasets/test/" \;
+!find /content/darknet/export -name "armas(*[6])*" -exec cp {} "/content/darknet/Datasets/test/" \;
+!find /content/darknet/export -name "armas(*[9])*" -exec cp {} "/content/darknet/Datasets/test/" \;
+
+#split 2
+!find /content/darknet/export -name "armas(*[0])*" -exec cp {} "/content/darknet/Datasets/train/" \;
+!find /content/darknet/export -name "armas(*[1])*" -exec cp {} "/content/darknet/Datasets/train/" \;
+!find /content/darknet/export -name "armas(*[2])*" -exec cp {} "/content/darknet/Datasets/train/" \;
+!find /content/darknet/export -name "armas(*[4])*" -exec cp {} "/content/darknet/Datasets/train/" \;
+!find /content/darknet/export -name "armas(*[5])*" -exec cp {} "/content/darknet/Datasets/train/" \;
+!find /content/darknet/export -name "armas(*[7])*" -exec cp {} "/content/darknet/Datasets/train/" \;
+!find /content/darknet/export -name "armas(*[8])*" -exec cp {} "/content/darknet/Datasets/train/" \;
+
+#split check
+print("Tarki said: The folder test contains:")
+!find /content/darknet/Datasets/test/ -name "armas*" | wc -l
+print("Tarki said: The folder train contains:")
+!find /content/darknet/Datasets/train/ -name "armas*" | wc -l
+print("Tarki said: Lets look a small part of our data:")
+!find /content/darknet/Datasets/train/ -name "armas([1-4])*"
+
+%cd /content/darknet/
+%cp export/_darknet.labels data/obj.names
+%mkdir /content/darknet/data/obj
+
+%cd /content/darknet/Datasets/train/
+!rename 's/armas/train/g' *
+%cd /content/darknet/Datasets/test/
+!rename 's/armas/test/g' *
+
+#obj.data
+%cd /content/darknet/
+with open('data/obj.data', 'w') as out:
+  out.write('classes = 1\n')
+  out.write('train = /content/darknet/data/train.txt\n')
+  out.write('valid = /content/darknet/data/valid.txt\n')
+  out.write('names = /content/darknet/data/obj.names\n')
+  out.write('backup = backup/')
+
+import os
+
+with open('data/train.txt', 'w') as out:
+  for img in [f for f in os.listdir('/content/darknet/Datasets/train') if f.endswith('jpg')]:
+    out.write('/content/darknet/Datasets/train/' + img + '\n')
+
+with open('data/valid.txt', 'w') as out:
+  for img in [f for f in os.listdir('/content/darknet/Datasets/test') if f.endswith('jpg')]:
+    out.write('/content/darknet/Datasets/test/' + img + '\n')
+
+%cat data/obj.data
+
+%cd /content/darknet/cfg/
+!cp yolov4-custom.cfg yolov4-tarki.cfg
+!cp yolov4-tiny-custom.cfg yolov4-tiny-tarki.cfg
+
+#necessary settings
+%cd /content/darknet/cfg/
+!sed -i 's/classes=80/classes=1/g' yolov4-tarki.cfg
+!sed -i 's/classes=80/classes=1/g' yolov4-tiny-tarki.cfg
+
+!sed -i 's/filters=255/filters=18/g' yolov4-tarki.cfg
+!sed -i 's/filters=255/filters=18/g' yolov4-tiny-tarki.cfg
+
+!sed -i 's/width=608/width=416/g' yolov4-tarki.cfg
+!sed -i 's/height=608/height=416/g' yolov4-tarki.cfg
+
+!sed -i 's/subdivisions=16/subdivisions=64/g' yolov4-tarki.cfg
+!sed -i 's/subdivisions=1/subdivisions=4/g' yolov4-tiny-tarki.cfg  #να μην τρεξει στο tiny καθως απο  προεπιλογη εχει 1 
+
+!sed -i 's/max_batches = 500500/max_batches = 2000/g' yolov4-tarki.cfg
+!sed -i 's/max_batches = 500200/max_batches = 2000/g' yolov4-tiny-tarki.cfg
+
+%cd /content/darknet/cfg/
+!sed -i 's/steps=400000,450000/steps=1600,1800/g' yolov4-tarki.cfg
+!sed -i 's/steps=400000,450000/steps=1600,1800/g' yolov4-tiny-tarki.cfg
+
+!sed -i 's/batch=32/batch=64/g' yolov4-tiny-tarki.cfg
+
+#last check
+%cd /content/darknet
+%cat cfg/yolov4-tarki.cfg
+
+#RUN!
+%cd /content/darknet/
+!./darknet detector train data/obj.data cfg/yolov4-tarki.cfg yolov4.conv.137 -dont_show -map
