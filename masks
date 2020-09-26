@@ -38,21 +38,6 @@ cv2.__version__
 #YOLOv4 conv net
 !cp "/content/drive/My Drive/DNN/yolov4.conv.137" /content/darknet/
 
-#dataset
-%cd /content/darknet/
-!curl -L https://public.roboflow.ai/ds/5c6ksTRNYr?key=93LronakUY > roboflow.zip; unzip roboflow.zip; rm roboflow.zip
-
-#dataset conversion
-%cd /content/darknet/export/
-!rename 's/\.[r][f].*//' *.jpg
-!rename 's/ //g' *.jpg
-!rename 's/[j][p][g]\.[r][f].*/txt/' *.txt  
-!rename 's/ //g' *.txt
-
-#dataset check
-%cd /content/darknet/export
-!ls -cr | head -n 3
-!ls -cr | tail -n 3
 
 #dataset split process
 %cd /content/darknet/
@@ -68,49 +53,50 @@ cv2.__version__
 !ls Datasets/test | wc -l
 
 #dataset count
-%cd /content/darknet/export
-!ls | wc -l
-
-#count split
-!find /content/darknet/export -name "armas(*[3])*" | wc -l
-!find /content/darknet/export -name "armas(*[6])*" | wc -l
-!find /content/darknet/export -name "armas(*[9])*" | wc -l
+%cd /content/darknet/
+!ls "/content/drive/My Drive/DNN/Datasets/Masks/dataset_copy" | wc -l
 
 #split
-!find /content/darknet/export -name "armas(*[3])*" -exec cp {} "/content/darknet/Datasets/test/" \;
-!find /content/darknet/export -name "armas(*[6])*" -exec cp {} "/content/darknet/Datasets/test/" \;
-!find /content/darknet/export -name "armas(*[9])*" -exec cp {} "/content/darknet/Datasets/test/" \;
+!find "/content/drive/My Drive/DNN/Datasets/Masks/dataset_copy" -name "maksssksksss*[3].*" -exec cp {} "/content/darknet/Datasets/test/" \;
+!find "/content/drive/My Drive/DNN/Datasets/Masks/dataset_copy" -name "maksssksksss*[6].*" -exec cp {} "/content/darknet/Datasets/test/" \;
+!find "/content/drive/My Drive/DNN/Datasets/Masks/dataset_copy" -name "maksssksksss*[9].*" -exec cp {} "/content/darknet/Datasets/test/" \;
 
 #split 2
-!find /content/darknet/export -name "armas(*[0])*" -exec cp {} "/content/darknet/Datasets/train/" \;
-!find /content/darknet/export -name "armas(*[1])*" -exec cp {} "/content/darknet/Datasets/train/" \;
-!find /content/darknet/export -name "armas(*[2])*" -exec cp {} "/content/darknet/Datasets/train/" \;
-!find /content/darknet/export -name "armas(*[4])*" -exec cp {} "/content/darknet/Datasets/train/" \;
-!find /content/darknet/export -name "armas(*[5])*" -exec cp {} "/content/darknet/Datasets/train/" \;
-!find /content/darknet/export -name "armas(*[7])*" -exec cp {} "/content/darknet/Datasets/train/" \;
-!find /content/darknet/export -name "armas(*[8])*" -exec cp {} "/content/darknet/Datasets/train/" \;
+!find "/content/drive/My Drive/DNN/Datasets/Masks/dataset_copy" -name "maksssksksss*[0].*" -exec cp {} "/content/darknet/Datasets/train/" \;
+!find "/content/drive/My Drive/DNN/Datasets/Masks/dataset_copy" -name "maksssksksss*[1].*" -exec cp {} "/content/darknet/Datasets/train/" \;
+!find "/content/drive/My Drive/DNN/Datasets/Masks/dataset_copy" -name "maksssksksss*[2].*" -exec cp {} "/content/darknet/Datasets/train/" \;
+!find "/content/drive/My Drive/DNN/Datasets/Masks/dataset_copy" -name "maksssksksss*[4].*" -exec cp {} "/content/darknet/Datasets/train/" \;
+!find "/content/drive/My Drive/DNN/Datasets/Masks/dataset_copy" -name "maksssksksss*[5].*" -exec cp {} "/content/darknet/Datasets/train/" \;
+!find "/content/drive/My Drive/DNN/Datasets/Masks/dataset_copy" -name "maksssksksss*[7].*" -exec cp {} "/content/darknet/Datasets/train/" \;
+!find "/content/drive/My Drive/DNN/Datasets/Masks/dataset_copy" -name "maksssksksss*[8].*" -exec cp {} "/content/darknet/Datasets/train/" \;
+
 
 #split check
 print("Tarki said: The folder test contains:")
-!find /content/darknet/Datasets/test/ -name "armas*" | wc -l
+!find /content/darknet/Datasets/test/ -name "maksssksksss*" | wc -l
 print("Tarki said: The folder train contains:")
-!find /content/darknet/Datasets/train/ -name "armas*" | wc -l
+!find /content/darknet/Datasets/train/ -name "maksssksksss*" | wc -l
 print("Tarki said: Lets look a small part of our data:")
-!find /content/darknet/Datasets/train/ -name "armas([1-4])*"
+!find /content/darknet/Datasets/train/ -name "maksssksksss[1-4].*"
 
 %cd /content/darknet/
-%cp export/_darknet.labels data/obj.names
+%cp "/content/drive/My Drive/DNN/Datasets/Masks/dataset_copy/_darknet.labels" data/obj.names
+%cat data/obj.names
+
 %mkdir /content/darknet/data/obj
 
+#rename dataset items
 %cd /content/darknet/Datasets/train/
-!rename 's/armas/train/g' *
+!rename 's/maksssksksss/train/g' *
+print("Tarki said: Train OK!")
 %cd /content/darknet/Datasets/test/
-!rename 's/armas/test/g' *
+!rename 's/maksssksksss/test/g' *
+
 
 #obj.data
 %cd /content/darknet/
 with open('data/obj.data', 'w') as out:
-  out.write('classes = 1\n')
+  out.write('classes = 3\n')
   out.write('train = /content/darknet/data/train.txt\n')
   out.write('valid = /content/darknet/data/valid.txt\n')
   out.write('names = /content/darknet/data/obj.names\n')
@@ -134,26 +120,28 @@ with open('data/valid.txt', 'w') as out:
 
 #necessary settings
 %cd /content/darknet/cfg/
-!sed -i 's/classes=80/classes=1/g' yolov4-tarki.cfg
-!sed -i 's/classes=80/classes=1/g' yolov4-tiny-tarki.cfg
+!sed -i 's/classes=80/classes=3/g' yolov4-tarki.cfg
+!sed -i 's/classes=80/classes=3/g' yolov4-tiny-tarki.cfg
 
-!sed -i 's/filters=255/filters=18/g' yolov4-tarki.cfg
-!sed -i 's/filters=255/filters=18/g' yolov4-tiny-tarki.cfg
+!sed -i 's/filters=255/filters=24/g' yolov4-tarki.cfg
+!sed -i 's/filters=255/filters=24/g' yolov4-tiny-tarki.cfg
 
 !sed -i 's/width=608/width=416/g' yolov4-tarki.cfg
 !sed -i 's/height=608/height=416/g' yolov4-tarki.cfg
 
 !sed -i 's/subdivisions=16/subdivisions=64/g' yolov4-tarki.cfg
-!sed -i 's/subdivisions=1/subdivisions=4/g' yolov4-tiny-tarki.cfg  #να μην τρεξει στο tiny καθως απο  προεπιλογη εχει 1 
+!sed -i 's/subdivisions=1/subdivisions=4/g' yolov4-tiny-tarki.cfg  
 
-!sed -i 's/max_batches = 500500/max_batches = 2000/g' yolov4-tarki.cfg
-!sed -i 's/max_batches = 500200/max_batches = 2000/g' yolov4-tiny-tarki.cfg
+!sed -i 's/max_batches = 500500/max_batches = 506000/g' yolov4-tarki.cfg
+!sed -i 's/max_batches = 500200/max_batches = 506000/g' yolov4-tiny-tarki.cfg
 
-%cd /content/darknet/cfg/
-!sed -i 's/steps=400000,450000/steps=1600,1800/g' yolov4-tarki.cfg
-!sed -i 's/steps=400000,450000/steps=1600,1800/g' yolov4-tiny-tarki.cfg
+!sed -i 's/steps=400000,450000/steps=4800,5400/g' yolov4-tarki.cfg
+!sed -i 's/steps=400000,450000/steps=4800,5400/g' yolov4-tiny-tarki.cfg
 
 !sed -i 's/batch=32/batch=64/g' yolov4-tiny-tarki.cfg
+
+!sed -i 's/mosaic=0/mosaic=1/g' yolov4-tarki.cfg
+!sed -i 's/mosaic=0/mosaic=1/g' yolov4-tiny-tarki.
 
 #last check
 %cd /content/darknet
