@@ -37,8 +37,6 @@ cv2.__version__
 
 #YOLOv4 conv net
 !cp "/content/drive/My Drive/DNN/yolov4.conv.137" /content/darknet/
-#alternative download
-#!git clone https://github.com/AlexeyAB/darknet/releases/download/darknet_yolo_v3_optimal/yolov4.conv.137
 
 #dataset
 %cd /content/darknet/
