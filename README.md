@@ -10,5 +10,5 @@ The code stored in iPython.
 
 ----
 Tarkasis Konstantinos
-bad19014@uom.edu.gr
+ktarkasis@uom.edu.gr
 tarkithes@gmail.com
